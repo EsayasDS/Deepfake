@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detection — AI-Powered Forensic Analysis</title>
+    <meta name="description" content="Detect deepfake images and videos using Multi-Branch CNN with EfficientNetB3, DCT and SRM forensic analysis.">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-content">
+            <a href="#hero" class="nav-logo">
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="nav-brand">Deepfake<span class="accent">Shield</span></span>
+            </a>
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-links" id="nav-links">
+                <a href="#hero" class="nav-link">Home</a>
+                <a href="#scanner" class="nav-link">Scanner</a>
+                <a href="#about" class="nav-link">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-grid"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Deepfake</span> Detection
+            </h1>
+            <p class="hero-tagline">AI-Powered Forensic Face Analysis</p>
+            <div class="hero-stats-row">
+                <div class="hero-chip"><strong>92.12%</strong> AUC-ROC</div>
+                <div class="hero-chip"><strong>82.94%</strong> Accuracy</div>
+                <div class="hero-chip"><strong>19K</strong> Images Trained</div>
+            </div>
+            <a href="#scanner" class="btn-hero">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Upload & Scan
+            </a>
+        </div>
+    </section>
+
+    <!-- Scanner Section -->
+    <section class="section" id="scanner">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">SCANNER</span>
+                <h2 class="section-title">Analyze Media</h2>
+                <p class="section-desc">Upload an image or video to detect if it contains a real or AI-generated face.</p>
+            </div>
+            <div class="upload-wrapper">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-content">
+                        <div class="upload-icon-wrapper">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                        </div>
+                        <h3>Drag & Drop Your File</h3>
+                        <p>JPG, PNG, WEBP &bull; MP4, AVI, WEBM</p>
+                        <button class="btn-browse" onclick="document.getElementById('file-input').click()">Upload File</button>
+                        <input type="file" id="file-input" hidden accept="image/*,video/*">
+                    </div>
+                </div>
+                <!-- Scanning -->
+                <div class="scanning-state hidden" id="scanning-state">
+                    <div class="scanner-box">
+                        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+                        <div class="scanner-line"></div>
+                        <div class="preview-container">
+                            <img id="preview-image" class="hidden">
+                            <video id="preview-video" class="hidden" autoplay loop muted></video>
+                        </div>
+                    </div>
+                    <div class="loading-text">
+                        <span class="loading-label">ANALYZING</span>
+                        <div class="dots"><span>.</span><span>.</span><span>.</span></div>
+                    </div>
+                    <div class="pipeline-steps">
+                        <div class="pipe-step"><span class="pipe-num">01</span><span class="pipe-label">MTCNN Face Detection</span></div>
+                        <div class="pipe-step"><span class="pipe-num">02</span><span class="pipe-label">SRM Noise Extraction</span></div>
+                        <div class="pipe-step"><span class="pipe-num">03</span><span class="pipe-label">DCT Frequency Analysis</span></div>
+                        <div class="pipe-step"><span class="pipe-num">04</span><span class="pipe-label">Neural Inference</span></div>
+                    </div>
+                </div>
+                <!-- Results -->
+                <div class="results-section hidden" id="results-section">
+                    <div class="verdict-card" id="verdict-card">
+                        <span class="verdict-label">ANALYSIS COMPLETE</span>
+                        <div class="verdict-badge" id="verdict-badge">REAL</div>
+                        <div class="confidence-meter">
+                            <div class="meter-header">
+                                <span>Confidence</span>
+                                <span class="confidence-val" id="confidence-value">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-box"><span class="stat-label">Raw Score</span><span class="stat-value" id="stat-score">0.0000</span></div>
+                            <div class="stat-box"><span class="stat-label">Threshold</span><span class="stat-value" id="stat-threshold">0.4191</span></div>
+                            <div class="stat-box" id="frames-box" style="display:none;"><span class="stat-label">Frames</span><span class="stat-value" id="stat-frames">0</span></div>
+                        </div>
+                        <button class="btn-reset" id="reset-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Scan Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section about-main" id="about">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">ABOUT THE PROJECT</span>
+                <h2 class="section-title">Deepfake Detection</h2>
+                <p class="section-desc">A Computer Vision research project by Debre Birhan University, Department of Data Science.</p>
+            </div>
+
+            <div class="about-intro">
+                <p>Deepfake generation techniques have advanced rapidly, creating serious concerns regarding the authenticity of digital media. As manipulated images and videos become increasingly realistic, conventional visual inspection is no longer sufficient for reliable detection.</p>
+                <p>This system presents a <strong>multi-branch deep learning framework</strong> that combines three complementary facial representations: raw RGB appearance, Spatial Rich Model (SRM)-based residual noise patterns, and Discrete Cosine Transform (DCT)-based frequency information. By integrating both spatial and frequency-domain cues, the system captures semantic facial features as well as subtle manipulation artifacts introduced during face forgery.</p>
+            </div>
+
+            <!-- How It Works -->
+            <div class="about-block">
+                <div class="about-block-header" onclick="toggleBlock('how-content')">
+                    <h3>How It Works</h3>
+                    <span class="toggle-icon" id="how-content-icon">+</span>
+                </div>
+                <div class="about-block-body collapsed" id="how-content">
+                    <div class="pipeline">
+                        <div class="pipe-node"><span class="node-title">Input</span><span class="node-sub">224x224</span></div>
+                        <div class="pipe-arrow-h">&rarr;</div>
+                        <div class="pipe-node"><span class="node-title">MTCNN</span><span class="node-sub">Align Face</span></div>
+                        <div class="pipe-arrow-h">&rarr;</div>
+                        <div class="branches-row">
+                            <div class="branch-tag rgb-tag">RGB<br><small>EfficientNetB3</small></div>
+                            <div class="branch-tag srm-tag">SRM<br><small>4-Layer CNN</small></div>
+                            <div class="branch-tag dct-tag">DCT<br><small>3-Layer CNN</small></div>
+                        </div>
+                        <div class="pipe-arrow-h">&rarr;</div>
+                        <div class="pipe-node fusion-node"><span class="node-title">Fusion</span><span class="node-sub">512&rarr;256&rarr;64&rarr;1</span></div>
+                        <div class="pipe-arrow-h">&rarr;</div>
+                        <div class="pipe-node"><span class="node-title">Verdict</span><span class="node-sub">Real / Fake</span></div>
+                    </div>
+                    <div class="feature-cards">
+                        <div class="feature-card">
+                            <h4 class="fc-title rgb-color">RGB Branch</h4>
+                            <p>EfficientNetB3 pre-trained on ImageNet extracts high-level semantic facial features including skin texture, lighting inconsistencies, and blending artifacts that betray synthetic generation.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4 class="fc-title srm-color">SRM Noise Residuals</h4>
+                            <p>Three fixed 5x5 high-pass filters from the Spatial Rich Model suppress semantic content and expose subtle noise fingerprints such as checkerboard artifacts, over-smoothed textures, and GAN generation traces.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4 class="fc-title dct-color">DCT Frequency</h4>
+                            <p>The Discrete Cosine Transform applied on the Y-channel luminance reveals unnatural frequency distributions. Synthetic images violate the natural 1/f&sup2; decay pattern found in real photographs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance -->
+            <div class="about-block">
+                <div class="about-block-header" onclick="toggleBlock('perf-content')">
+                    <h3>Model Performance</h3>
+                    <span class="toggle-icon" id="perf-content-icon">+</span>
+                </div>
+                <div class="about-block-body collapsed" id="perf-content">
+                    <p class="perf-note">Evaluated on 3,776 held-out test samples with stratified 80/20 split.</p>
+                    <div class="metrics-grid">
+                        <div class="metric-card"><span class="metric-value">92.12<small>%</small></span><span class="metric-label">AUC-ROC</span><div class="metric-bar"><div class="metric-fill" style="width:92.12%"></div></div></div>
+                        <div class="metric-card"><span class="metric-value">82.94<small>%</small></span><span class="metric-label">Accuracy</span><div class="metric-bar"><div class="metric-fill" style="width:82.94%"></div></div></div>
+                    </div>
+                    <div class="report-card">
+                        <h4>Classification Report</h4>
+                        <div class="table-scroll">
+                            <table class="report-table">
+                                <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>Support</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="badge-real">Real</span></td><td>0.86</td><td>0.80</td><td>0.83</td><td>1,891</td></tr>
+                                    <tr><td><span class="badge-fake">Fake</span></td><td>0.81</td><td>0.87</td><td>0.84</td><td>1,885</td></tr>
+                                    <tr class="avg-row"><td><strong>Avg</strong></td><td><strong>0.84</strong></td><td><strong>0.84</strong></td><td><strong>0.83</strong></td><td><strong>3,776</strong></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h4>Confusion Matrix</h4>
+                        <div class="cm">
+                            <div class="cm-e"></div><div class="cm-h">Pred Real</div><div class="cm-h">Pred Fake</div>
+                            <div class="cm-rh">Actual Real</div><div class="cm-c cm-ok">1,509</div><div class="cm-c cm-err">382</div>
+                            <div class="cm-rh">Actual Fake</div><div class="cm-c cm-err">241</div><div class="cm-c cm-ok">1,644</div>
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h4>Training Dataset</h4>
+                        <div class="ds-grid">
+                            <div class="ds-item"><strong>19,000</strong><span>Total Images</span></div>
+                            <div class="ds-item"><strong>4</strong><span>Sources</span></div>
+                            <div class="ds-item"><strong>50/50</strong><span>Real/Fake</span></div>
+                            <div class="ds-item"><strong>3,776</strong><span>Test Set</span></div>
+                        </div>
+                        <div class="ds-tags">
+                            <span>FFHQ</span><span>Celeb-DF v2</span><span>FaceForensics++</span><span>SFHQ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team -->
+            <div class="about-block">
+                <div class="about-block-header" onclick="toggleBlock('team-content')">
+                    <h3>Research Team</h3>
+                    <span class="toggle-icon" id="team-content-icon">+</span>
+                </div>
+                <div class="about-block-body collapsed" id="team-content">
+                    <div class="team-info">
+                        <p><strong>Debre Birhan University</strong><br>Department of Data Science<br>Computer Vision Project — May 2026<br>Advisor: <strong>Abey Bekele</strong></p>
+                        <div class="tech-tags">
+                            <span>Python</span><span>TensorFlow</span><span>Keras</span><span>OpenCV</span><span>MTCNN</span><span>EfficientNetB3</span><span>Flask</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <span class="footer-brand">Deepfake <span class="accent">Detection</span></span>
+                <span class="footer-copy">&copy; 2026 Debre Birhan University</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    function toggleBlock(id) {
+        const el = document.getElementById(id);
+        const icon = document.getElementById(id + '-icon');
+        el.classList.toggle('collapsed');
+        icon.textContent = el.classList.contains('collapsed') ? '+' : '-';
+    }
+    </script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
