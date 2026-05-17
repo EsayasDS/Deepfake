@@ -1,8 +1,7 @@
 import os
 import cv2
 import numpy as np
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 from model_utils import (
     load_models,
@@ -10,10 +9,7 @@ from model_utils import (
     process_and_predict_video_frame
 )
 
-app = Flask(__name__)
-# Enable CORS for all routes so the Vercel frontend can call this Render backend
-CORS(app)
-
+app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max-limit
 
@@ -31,11 +27,7 @@ def allowed_file(filename, allowed_extensions):
 
 @app.route('/')
 def index():
-    return jsonify({
-        "status": "online",
-        "message": "Deepfake Detection API is running.",
-        "endpoints": ["/api/analyze/image", "/api/analyze/video"]
-    })
+    return render_template('index.html')
 
 @app.route('/api/analyze/image', methods=['POST'])
 def analyze_image():
@@ -119,20 +111,32 @@ def analyze_video():
             avg_score = sum(scores) / len(scores)
             
             from model_utils import THRESHOLD
-            # FIXED LOGIC: score > THRESHOLD means FAKE
-            if avg_score > THRESHOLD:
+            is_fake = avg_score > THRESHOLD
+            fake_prob = round(avg_score * 100, 1)
+            real_prob = round((1.0 - avg_score) * 100, 1)
+
+            if avg_score >= 0.7:
                 verdict = "FAKE"
-                confidence = avg_score * 100
-            else:
+                confidence = fake_prob
+            elif avg_score > THRESHOLD:
+                verdict = "LIKELY FAKE"
+                confidence = fake_prob
+            elif avg_score <= 0.2:
                 verdict = "REAL"
-                confidence = (1.0 - avg_score) * 100
+                confidence = real_prob
+            else:
+                verdict = "LIKELY REAL"
+                confidence = real_prob
                 
             return jsonify({
                 'success': True,
                 'type': 'video',
                 'result': {
-                    'score': avg_score,
                     'verdict': verdict,
+                    'is_fake': is_fake,
+                    'score': round(avg_score, 4),
+                    'fake_prob': fake_prob,
+                    'real_prob': real_prob,
                     'confidence': confidence,
                     'threshold': THRESHOLD,
                     'frames_analyzed': len(scores)
@@ -153,4 +157,4 @@ def analyze_video():
     return jsonify({'error': 'Invalid file type'}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)

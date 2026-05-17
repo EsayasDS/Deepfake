@@ -16,9 +16,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from mtcnn import MTCNN
-import os
 
-MODEL_PATH  = os.path.join(os.path.dirname(__file__), "..", "models", "Deepfake_Final.keras")
+MODEL_PATH  = r"D:\final test data\Deepfake_Final.keras"
 TARGET_SIZE = 224
 THRESHOLD   = 0.4191  # From predict.py — optimal Youden index
 
@@ -185,21 +184,40 @@ def process_and_predict_image_strict(img_bgr):
 
     padded = apply_resize_and_padding(img_bgr, TARGET_SIZE)
     aligned = align_face_simple(padded)
+    face_detected = aligned is not None
     if aligned is None:
         aligned = padded
 
     inputs = build_inputs(aligned)
     score = float(model.predict(inputs, verbose=0)[0][0])
 
-    # FIXED LOGIC: score > THRESHOLD means FAKE
-    if score > THRESHOLD:
-        verdict = "FAKE"
-        confidence = score * 100
-    else:
-        verdict = "REAL"
-        confidence = (1.0 - score) * 100
+    is_fake = score <= THRESHOLD
+    real_prob = round(score * 100, 1)
+    fake_prob = round((1.0 - score) * 100, 1)
 
-    return {"score": score, "verdict": verdict, "confidence": confidence, "threshold": THRESHOLD}
+    if score >= 0.7:
+        verdict = "REAL"
+        confidence = real_prob
+    elif score > THRESHOLD:
+        verdict = "LIKELY REAL"
+        confidence = real_prob
+    elif score <= 0.2:
+        verdict = "FAKE"
+        confidence = fake_prob
+    else:
+        verdict = "LIKELY FAKE"
+        confidence = fake_prob
+
+    return {
+        "verdict":        verdict,
+        "is_fake":        is_fake,
+        "score":          round(score, 4),
+        "fake_prob":      fake_prob,
+        "real_prob":      real_prob,
+        "confidence":     confidence,
+        "face_detected":  face_detected,
+        "threshold":      THRESHOLD
+    }
 
 # ─────────────────────────────────────────────────────────────
 # PIPELINE 2: VIDEO DEMO API (deepfake_demo_v3.py)
@@ -217,12 +235,17 @@ def process_and_predict_video_frame(img_bgr):
     inputs = build_inputs(aligned)
     score = float(model.predict(inputs, verbose=0)[0][0])
 
-    # FIXED LOGIC: score > THRESHOLD means FAKE
-    if score > THRESHOLD:
+    if score >= 0.7:
         verdict = "FAKE"
         confidence = score * 100
-    else:
+    elif score > THRESHOLD:
+        verdict = "LIKELY FAKE"
+        confidence = score * 100
+    elif score <= 0.2:
         verdict = "REAL"
+        confidence = (1.0 - score) * 100
+    else:
+        verdict = "LIKELY REAL"
         confidence = (1.0 - score) * 100
 
     return {"score": score, "verdict": verdict, "confidence": confidence, "threshold": THRESHOLD}

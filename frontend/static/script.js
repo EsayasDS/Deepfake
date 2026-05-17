@@ -75,20 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.classList.add('hidden');
     }
 
-    // --- CONFIGURATION ---
-    // For local development, leave empty ('').
-    // For Vercel production, replace with your Render URL (e.g., 'https://your-deepfake-api.onrender.com')
-    const BACKEND_URL = ''; 
-    // ---------------------
-
     function uploadFile(file, endpoint) {
         const formData = new FormData();
         formData.append('file', file);
-        
-        // Use the configured backend URL
-        const fullUrl = BACKEND_URL + endpoint;
-
-        fetch(fullUrl, { method: 'POST', body: formData })
+        fetch(endpoint, { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 scanningState.classList.add('hidden');
@@ -104,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showResults(result, type) {
         verdictBadge.textContent = result.verdict;
-        verdictBadge.className = 'verdict-badge ' + result.verdict.toLowerCase();
+        const isReal = !result.is_fake;
+        verdictBadge.className = 'verdict-badge ' + (isReal ? 'real' : 'fake');
         confidenceValue.textContent = result.confidence.toFixed(1) + '%';
         statThreshold.textContent = result.threshold.toFixed(4);
         statScore.textContent = result.score.toFixed(4);
@@ -112,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
             framesBox.style.display = '';
             statFrames.textContent = result.frames_analyzed;
         } else { framesBox.style.display = 'none'; }
-        const isReal = result.verdict === 'REAL';
         progressFill.style.width = '0%';
         progressFill.style.background = isReal ? 'linear-gradient(90deg,#00ff88,#00ccff)' : 'linear-gradient(90deg,#ff3366,#ff6644)';
         progressFill.style.boxShadow = isReal ? '0 0 12px rgba(0,255,136,0.4)' : '0 0 12px rgba(255,51,102,0.4)';
