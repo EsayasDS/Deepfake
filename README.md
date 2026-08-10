@@ -1,60 +1,163 @@
-Deepfake Detection System
+ Deepfake Detection System
 
-A Computer Vision research project developed by esayas melaku.
-This project provides an AI-powered forensic media scanner capable of accurately classifying images and videos as real or AI-generated (deepfakes). The system is built using a Multi-Branch CNN architecture, combining spatial appearance features and frequency domain artifacts.
+A computer vision research project developed by Esayas Melaku at Debre Birhan University.
+
+This project investigates deepfake detection using a multi-branch CNN architecture that combines spatial appearance features with frequency-domain and noise-residual information. The system is designed to classify facial images as real or AI-generated (deepfake).
+
+> Important: The reported performance reflects evaluation on the project's held-out test set and should not be interpreted as universal real-world deepfake detection performance. Deepfake detection models can generalize differently to manipulation techniques, datasets, image qualities, and generation methods that were not represented during training.
+
  Overview
-Deepfake generation techniques have advanced rapidly, creating serious concerns regarding the authenticity of digital media. As manipulated images and videos become increasingly realistic, conventional visual inspection is no longer sufficient for reliable detection.
+Deepfake generation techniques have advanced rapidly, creating serious concerns about the authenticity of digital media. As manipulated images become increasingly realistic, conventional visual inspection becomes less reliable.
 
-Our multi-branch deep learning framework combines three complementary facial representations:
-1. RGB Branch (EfficientNetB3): Extracts high-level semantic facial features including skin texture, lighting inconsistencies, and blending artifacts.
-2. SRM Noise Residuals (4-Layer CNN): Three fixed 5x5 high-pass filters from the Spatial Rich Model suppress semantic content and expose subtle noise fingerprints.
-3. DCT Frequency (3-Layer CNN): The Discrete Cosine Transform applied on the Y-channel luminance reveals unnatural frequency distributions that violate the natural 1/f² decay pattern found in real photographs.
+This project explores a multi-branch deep learning framework that analyzes three complementary facial representations:
 
-These branches are fused through dense layers to make a highly accurate final prediction.
- Performance Metrics
-Evaluated on 3,776 held-out test samples with a stratified 80/20 split,The model achieved the following results on the held-out test set:
-AUC-ROC: 92.12%
-Accuracy: 82.94%
-The training dataset comprised 19,000 images compiled from 4 distinct sources (FFHQ, Celeb-DF v2, FaceForensics++, SFHQ) perfectly balanced 50/50 between real and fake samples.
+ 1. RGB Branch — EfficientNetB3
+
+Extracts high-level semantic and visual features from RGB facial images, including:
+
+* skin texture
+* lighting inconsistencies
+* facial blending artifacts
+* other spatial appearance patterns
+
+ 2. SRM Noise Residual Branch — 4-Layer CNN
+
+Uses three fixed 5×5 high-pass filters derived from the Spatial Rich Model (SRM).
+
+The filters suppress much of the semantic image content and emphasize subtle noise residuals that may contain forensic fingerprints associated with image manipulation.
+
+ 3. DCT Frequency Branch — 3-Layer CNN
+
+Applies the Discrete Cosine Transform (DCT) to the Y-channel luminance information to analyze frequency-domain characteristics.
+
+This branch is designed to capture abnormal frequency patterns that may differ from those commonly observed in natural photographs.
+
+ Feature Fusion
+
+The three branches are combined through dense layers to produce the final binary classification prediction:
+                 Input Face Image
+                        │
+          ┌─────────────┼─────────────┐
+          ↓             ↓             ↓
+     RGB Branch     SRM Branch    DCT Branch
+    EfficientNetB3   CNN + SRM     CNN + DCT
+          │             │             │
+          └─────────────┼─────────────┘
+                        ↓
+                 Feature Fusion
+                        ↓
+                Final Classifier
+                        ↓
+                 REAL / FAKE
+
+Performance
+
+The model was evaluated on 3,776 held-out test samples using a stratified train/test split.
+
+| Metric   |     Result |
+| -------- | ---------: |
+| Accuracy | 82.94% |
+| AUC-ROC  | 92.12% |
+
+The training dataset contained approximately 19,000 images, compiled from four sources:
+
+* FFHQ
+* Celeb-DF v2
+* FaceForensics++
+* SFHQ
+
+The dataset was balanced approximately 50/50 between real and fake samples.
+
+These results demonstrate promising performance on the project's evaluation data, while the model's ability to generalize to unseen deepfake generation methods and real-world media remains an important limitation and area for further research.
 
  Repository Structure
 
-The repository is structured to separate the presentation layer (frontend) from the heavy inference engine (backend) to allow for independent cloud deployment .
+The repository separates the presentation layer from the inference backend, allowing the components to be developed and deployed independently.
 
-text
-Deepfake
-├── frontend            
+Deepfake-Detection/
+├── frontend/
 │   ├── index.html
-│   └── static/           # CSS, JS, and image assets
-├── backend/              # Render-ready Flask API
-│   ├── app.py            # Main API routing (CORS enabled)
-│   ├── model_utils.py    # Deepfake inference pipelines
-│   └── requirements.txt  # Python dependencies
+│   └── static/
+│  
+├── backend/
+│   ├── app.py
+│   ├── model_utils.py
+│   └── requirements.txt
 ├── models/
-│   └── Deepfake_Final.keras # Final trained multi-branch model
+│   └── Deepfake_Final.keras
 ├── notebooks/
-│   └── deepfake-detection-final-model.ipynb # Complete training pipeline
+│   └── deepfake-detection-final-model.ipynb
+└── docs/
+    └── deepfake_documentation.pdf
 
-Running Locally
-
-To run the application on your local machine, you will need to start the Flask backend and open the static frontend.
+ Running Locally
 
  1. Start the Backend API
+
 The backend requires Python 3.9+ and TensorFlow.
+
 bash
 cd backend
 pip install -r requirements.txt
 python app.py
+```
 
-Note: The API runs on `http://127.0.0.1:5000` by default. The first run may take a moment to initialize the 88MB Keras model and MTCNN detector.*
+The API runs locally at:
 
-2. Open the Frontend
-Since the frontend is purely static, you can simply open `frontend/index.html` in your web browser. Or, for a better experience, serve it using Python's built-in HTTP server:
-bash
+```text
+http://127.0.0.1:5000
+```
+
+The first startup may take some time because the application needs to load the trained Keras model and the MTCNN face detector.
+
+ 2. Open the Frontend
+
+The frontend is a static web application.
+
+You can open:
+
+```text
+frontend/index.html
+```
+
+directly in a browser.
+
+Alternatively, use Python's built-in HTTP server:
+
+```bash
 cd frontend
 python -m http.server 3000
+```
 
-Then navigate to `http://localhost:3000` in your browser.
-Debre Birhan University 
-Department of Data Science  
-Computer Vision Project — May 2026  
+Then open:
+
+```text
+http://localhost:3000
+```
+
+## Limitations
+
+This project should be considered a **research and portfolio project**, not a universal forensic detection system.
+
+The main limitations include:
+
+* The model was trained on approximately 19,000 images.
+* The training data came from four specific datasets.
+* Performance can vary on unseen datasets and newer deepfake generation techniques.
+* The reported 82.94% accuracy and 92.12% AUC-ROC are specific to the held-out evaluation set.
+* Real-world media can differ substantially in resolution, compression, lighting, face pose, and manipulation technique.
+* Further evaluation on larger and more diverse datasets would be required before making claims about broad real-world generalization.
+
+## Documentation
+
+For a detailed explanation of the architecture, dataset, training methodology, experiments, evaluation, and project development, see:
+
+**[Deepfake Project Documentation](docs/deepfake_documentation.pdf)**
+
+## Academic Context
+
+**Debre Birhan University**
+Department of Data Science
+Computer Vision Project — May 2026
+
+**Developer:** Esayas Melaku
