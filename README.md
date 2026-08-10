@@ -35,6 +35,7 @@ This branch is designed to capture abnormal frequency patterns that may differ f
  Feature Fusion
 
 The three branches are combined through dense layers to produce the final binary classification prediction:
+
                  Input Face Image
                         │
           ┌─────────────┼─────────────┐
