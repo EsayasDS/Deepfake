@@ -34,8 +34,6 @@ Deepfake
 │   └── Deepfake_Final.keras # Final trained multi-branch model
 ├── notebooks/
 │   └── deepfake-detection-final-model.ipynb # Complete training pipeline
-└── docs/
-    └── deepfake_documentation.pdf # Academic documentation
 
 Running Locally
 
