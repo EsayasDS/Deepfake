@@ -1,27 +1,20 @@
 Deepfake Detection System
 
 A Computer Vision research project developed by esayas melaku.
-
 This project provides an AI-powered forensic media scanner capable of accurately classifying images and videos as real or AI-generated (deepfakes). The system is built using a Multi-Branch CNN architecture, combining spatial appearance features and frequency domain artifacts.
-
  Overview
-
 Deepfake generation techniques have advanced rapidly, creating serious concerns regarding the authenticity of digital media. As manipulated images and videos become increasingly realistic, conventional visual inspection is no longer sufficient for reliable detection.
 
 Our multi-branch deep learning framework combines three complementary facial representations:
 1. RGB Branch (EfficientNetB3): Extracts high-level semantic facial features including skin texture, lighting inconsistencies, and blending artifacts.
-2. SRM Noise Residuals (4-Layer CNN): Three fixed 5x5 high-pass filters from the Spatial Rich Model suppress semantic content and expose subtle noise fingerprints (e.g., GAN generation traces).
+2. SRM Noise Residuals (4-Layer CNN): Three fixed 5x5 high-pass filters from the Spatial Rich Model suppress semantic content and expose subtle noise fingerprints.
 3. DCT Frequency (3-Layer CNN): The Discrete Cosine Transform applied on the Y-channel luminance reveals unnatural frequency distributions that violate the natural 1/f² decay pattern found in real photographs.
 
 These branches are fused through dense layers to make a highly accurate final prediction.
-
  Performance Metrics
-
-Evaluated on 3,776 held-out test samples with a stratified 80/20 split, the model achieves state-of-the-art performance:
-
+Evaluated on 3,776 held-out test samples with a stratified 80/20 split,The model achieved the following results on the held-out test set:
 AUC-ROC: 92.12%
 Accuracy: 82.94%
-
 The training dataset comprised 19,000 images compiled from 4 distinct sources (FFHQ, Celeb-DF v2, FaceForensics++, SFHQ) perfectly balanced 50/50 between real and fake samples.
 
  Repository Structure
@@ -43,7 +36,6 @@ Deepfake
 │   └── deepfake-detection-final-model.ipynb # Complete training pipeline
 └── docs/
     └── deepfake_documentation.pdf # Academic documentation
-```
 
 Running Locally
 
@@ -60,15 +52,11 @@ Note: The API runs on `http://127.0.0.1:5000` by default. The first run may take
 
 2. Open the Frontend
 Since the frontend is purely static, you can simply open `frontend/index.html` in your web browser. Or, for a better experience, serve it using Python's built-in HTTP server:
-```bash
+bash
 cd frontend
 python -m http.server 3000
 
 Then navigate to `http://localhost:3000` in your browser.
-
-
- Research Team
-
-**Debre Birhan University**  
+Debre Birhan University 
 Department of Data Science  
 Computer Vision Project — May 2026  
